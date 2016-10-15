@@ -7,7 +7,7 @@ Arduino: any and all feature(s) that are being worked on in the MCU or Arduino s
 Android: and and all feature(s) that are being worked on in the app side of the project
 
 NOTE: might consider moving Report to seperate repository
-      when 
+      when/if project get more complex
 
 
 For a git tutorial:
