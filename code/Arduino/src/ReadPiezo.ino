@@ -12,12 +12,12 @@ void setup()
 
 void loop(){
   //Print the values of the sensors
-  for (int analogpin = 0; analogpin < 2; analogpin++)
+  for (int pin = 0; pin < 2; analogpin++)
   {
-    value = analogRead(analogpin);  //Read the value of the analog pin
+    value = analogRead(anaPins[pin]);  //Read the value of the analog pin
     delay(100);
-    value = analogRead(analogpin); //Read twice to establish value
-    Serial.print("Pin Number: %d = %d", pins, value);
+    value = analogRead(anaPins[pin]); //Read twice to establish value
+    Serial.print("Pin Number: %d = %d", anaPins[pin], value);
     delay(100);
   }
   delay(100);
