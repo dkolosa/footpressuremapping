@@ -9,40 +9,35 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
-import android.preference.DialogPreference;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
-import android.text.SpannableStringBuilder;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
+import android.os.Handler;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Handler;
+
 
 public class MainActivity extends AppCompatActivity {
 
     private BluetoothAdapter mbtAdapter = null;
     private BluetoothSocket mbtSocket = null;
     private InputStream outStream = null;
+
+    private ConnectedThread mConnectedThread;
     private static final String TAG = "bluetooth";
     private double userWeight = 0.0;
     private StringBuilder sb = new StringBuilder();
-    private ConnectedThread mConnectedThread;
     private List<String> mArrayAdapter = null;
-
-
 
     private int sensorDAta = 0;
 
@@ -69,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtArduino = (TextView) findViewById(R.id.txtArduino);
+        //txtArduino = (TextView) findViewById(R.id.txtArduino);
 
         //Generate id of squares
 
@@ -79,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
         midright = (TextView) findViewById(R.id.midright);
         botleft = (TextView) findViewById(R.id.botleft);
         botright = (TextView) findViewById(R.id.botright);
-
 
 
         //Check if bluetooth is supported if it is turn it on
@@ -99,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                         if (endOfLineIndex > 0) {                                            // if end-of-line,
                             String sbprint = sb.substring(0, endOfLineIndex);               // extract string
                             sb.delete(0, sb.length());                                      // and clear
-                            txtArduino.setText("Data from Arduino: " + sbprint);            // update TextView
+//                            txtArduino.setText("Data from Arduino: " + sbprint);            // update TextView
                         }
 
 
@@ -108,8 +102,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-        };
-    }
+            };
+
+        }
+
 
     private void bluetoothState(){
         if (mbtAdapter == null) {
@@ -120,15 +116,7 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(enableBT, 1);
         }
 
-        //Check for queue for device
-        Set<BluetoothDevice> pairDevices = mbtAdapter.getBondedDevices();
-        // If there are paired devices
-        if(pairDevices.size() > 0) {
-            for (BluetoothDevice device : pairDevices) {
-                //Add the name and address to an array adapter
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-            }
-        }
+
 
         // Create a Broadcast Reciever for ACTION_FOUND
         BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -144,6 +132,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+//        //Check for queue for device
+//        Set<BluetoothDevice> pairDevices = mbtAdapter.getBondedDevices();
+//        // If there are paired devices
+//        if(pairDevices.size() > 0) {
+//            for (BluetoothDevice device : pairDevices) {
+//                //Add the name and address to an array adapter
+//                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+//            }
+//        }
 
         //Register the bcast receiver
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -221,12 +219,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Create a data stream
-
         try{
             outStream = mbtSocket.getInputStream();
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), "Input stream connection failure", Toast.LENGTH_LONG).show();
         }
+
+        mConnectedThread = new ConnectedThread(mbtSocket);
+        mConnectedThread.start();
 
     }
 
@@ -271,6 +271,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_settings:
+                getUserWeight();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+    }
 }
 
 }

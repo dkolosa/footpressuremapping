@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FootMapping</string>
+    <string name="action_settings">Change Weight</string>
 </resources>
