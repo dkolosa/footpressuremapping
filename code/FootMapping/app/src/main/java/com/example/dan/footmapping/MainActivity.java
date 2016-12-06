@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     // MAC-address of Bluetooth module (you must edit this line)
-    private static String address = "00:15:FF:F2:19:5F";
+    private static String address = "20:16:08:16:14:78";
 
 
 
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //txtArduino = (TextView) findViewById(R.id.txtArduino);
+        txtArduino = (TextView) findViewById(R.id.txtArduino);
 
         //Generate id of squares
 
@@ -89,22 +90,23 @@ public class MainActivity extends AppCompatActivity {
                         byte[] readBuf = (byte[]) msg.obj;
                         String strIncom = new String(readBuf, 0, msg.arg1);                 // create string from bytes array
                         sb.append(strIncom);                                                // append string
-                        int endOfLineIndex = sb.indexOf("\r\n");                            // determine the end-of-line
+                        int endOfLineIndex = sb.indexOf("\n");                            // determine the end-of-line
+                        txtArduino.setText(strIncom);
                         if (endOfLineIndex > 0) {                                            // if end-of-line,
                             String sbprint = sb.substring(0, endOfLineIndex);               // extract string
                             sb.delete(0, sb.length());                                      // and clear
-//                            txtArduino.setText("Data from Arduino: " + sbprint);            // update TextView
+                                        // update TextView
                         }
-
 
                         //Log.d(TAG, "...String:"+ sb.toString() +  "Byte:" + msg.arg1 + "...");
                         break;
                 }
             }
 
-            };
+        };
 
-        }
+
+    }
 
 
     private void bluetoothState(){
@@ -199,6 +201,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             mbtSocket = createBluetoothSocket(device);
+            Toast.makeText(getApplicationContext(), "Socket created", Toast.LENGTH_LONG).show();
+
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), "Socket creation failed", Toast.LENGTH_LONG).show();
         }
@@ -221,6 +225,8 @@ public class MainActivity extends AppCompatActivity {
         //Create a data stream
         try{
             outStream = mbtSocket.getInputStream();
+            Toast.makeText(getApplicationContext(), "Getting input data", Toast.LENGTH_LONG).show();
+
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), "Input stream connection failure", Toast.LENGTH_LONG).show();
         }
@@ -280,7 +286,18 @@ public class MainActivity extends AppCompatActivity {
 
             default:
                 return super.onOptionsItemSelected(item);
+        }
     }
-}
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        cancel();
+        super.onDestroy();
+    }
 }

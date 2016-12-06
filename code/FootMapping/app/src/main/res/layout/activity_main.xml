@@ -82,12 +82,20 @@
                 android:background="#51ff00"
                 android:id="@+id/midleft"
                 android:text="mleft"
-                android:layout_column="0"
-                android:layout_row="1"
+
                 android:layout_weight="1"
             android:layout_alignBaseline="@+id/midright"
             android:layout_alignBottom="@+id/midright"
             android:layout_alignStart="@+id/botleft" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:background="#ffffff"
+            android:id="@+id/txtArduino"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/topleft" />
     </RelativeLayout>
 
 </RelativeLayout>
