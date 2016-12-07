@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.graphics.CornerPathEffect;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -16,16 +18,22 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -34,13 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothSocket mbtSocket = null;
     private InputStream outStream = null;
 
+
     private ConnectedThread mConnectedThread;
     private static final String TAG = "bluetooth";
     private double userWeight = 0.0;
     private StringBuilder sb = new StringBuilder();
     private List<String> mArrayAdapter = null;
 
-    private int sensorDAta = 0;
+//    private int[] sensorDAta = ;
+    private int sensors = 5;
 
     Handler h;
     TextView txtArduino;
@@ -51,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     TextView midright;
     TextView botleft;
     TextView botright;
+
+    Button btnOn, btnOff;
 
     final int RECIEVE_MESSAGE = 1;
 
@@ -65,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtArduino = (TextView) findViewById(R.id.txtArduino);
+//        txtArduino = (TextView) findViewById(R.id.txtArduino);
 
         //Generate id of squares
 
@@ -76,11 +88,9 @@ public class MainActivity extends AppCompatActivity {
         botleft = (TextView) findViewById(R.id.botleft);
         botright = (TextView) findViewById(R.id.botright);
 
+//        btnOn = (Button) findViewById(R.id.btm_on);
+//        btnOff = (Button) findViewById(R.id.btn_off);
 
-        //Check if bluetooth is supported if it is turn it on
-        mbtAdapter = BluetoothAdapter.getDefaultAdapter();
-        bluetoothState();
-        getUserWeight();
 
 
         h = new Handler() {
@@ -88,23 +98,151 @@ public class MainActivity extends AppCompatActivity {
                 switch (msg.what) {
                     case RECIEVE_MESSAGE:                                                   // if receive massage
                         byte[] readBuf = (byte[]) msg.obj;
+
+//                        ByteBuffer wrapped = ByteBuffer.wrap(readBuf);
+//                        sensorDAta = wrapped.getInt();
+
                         String strIncom = new String(readBuf, 0, msg.arg1);                 // create string from bytes array
+
                         sb.append(strIncom);                                                // append string
-                        int endOfLineIndex = sb.indexOf("\n");                            // determine the end-of-line
-                        txtArduino.setText(strIncom);
+                        int endOfLineIndex = sb.indexOf("~");                            // determine the end-of-line
+
                         if (endOfLineIndex > 0) {                                            // if end-of-line,
                             String sbprint = sb.substring(0, endOfLineIndex);               // extract string
                             sb.delete(0, sb.length());                                      // and clear
-                                        // update TextView
+                            // update TextView
+
+                            sbprint = sbprint.replaceFirst(Pattern.quote("#"), "");
+
+                            if(sbprint.startsWith("+"))
+                            {
+                                sbprint.replaceFirst(Pattern.quote("+"), "");
+                            }
+
+                            if(sbprint.contains("++")) {
+                                sbprint.replace(Pattern.quote("++"), "+0+");
+                            }
+                            if(sbprint.contains("+++")) {
+                                sbprint.replace(Pattern.quote("+++"), "+0+0+");
+                            }
+
+                            String[] parts = sbprint.split(Pattern.quote("+"));
+
+//                            topleft.setText(parts[0]);
+//                            topright.setText(parts[1]);
+//                            midleft.setText(parts[2]);
+//                            midright.setText(parts[3]);
+//                            botleft.setText(parts[4]);
+//                            botright.setText(parts[5]);
+
+
+
+                            int sensorData = (parts[0].equals("")) ? 0 : Integer.parseInt(parts[0]);
+                            //Log.d(TAG, "String:" + sensorData);
+
+                            if (sensorData <= 40){
+                                topleft.setBackgroundColor(Color.BLUE);
+                            } else if (sensorData > 40 && sensorData < 80) {
+                                topleft.setBackgroundColor(Color.GREEN);
+                            } else if (sensorData > 80 && sensorData < 120) {
+                                topleft.setBackgroundColor(Color.RED);}
+                            else if ( sensorData >= 120) {
+                                topleft.setBackgroundColor(Color.MAGENTA);
+                            }
+
+//                            txtArduino.setText(sbprint);
+
+                            sensorData = (parts[1].equals("")) ? 0 : Integer.parseInt(parts[1]);
+                            if (sensorData <= 40){
+                                topright.setBackgroundColor(Color.BLUE);
+                            } else if (sensorData > 40 && sensorData <= 80) {
+                                topright.setBackgroundColor(Color.GREEN);
+                            } else if (sensorData > 80 && sensorData < 120) {
+                                topright.setBackgroundColor(Color.RED);}
+                            else if ( sensorData >= 120) {
+                                topright.setBackgroundColor(Color.MAGENTA);
+                            }
+
+                            sensorData = (parts[2].equals("")) ? 0 : Integer.parseInt(parts[2]);
+                            if (sensorData <= 40){
+                                midleft.setBackgroundColor(Color.BLUE);
+                            } else if (sensorData > 80 && sensorData <= 80) {
+                                midleft.setBackgroundColor(Color.GREEN);
+                            } else if (sensorData > 80 && sensorData < 120) {
+                                midleft.setBackgroundColor(Color.RED);}
+                            else if ( sensorData >= 120) {
+                                midleft.setBackgroundColor(Color.MAGENTA);
+                            }
+
+
+//                            sensorData = Integer.parseInt(parts[3]);
+                            sensorData = (parts[3].equals("")) ? 0 : Integer.parseInt(parts[3]);
+                            if (sensorData <= 40){
+                                midright.setBackgroundColor(Color.BLUE);
+                            } else if (sensorData > 40 && sensorData <= 80) {
+                                midright.setBackgroundColor(Color.GREEN);
+                            } else if (sensorData > 80 && sensorData < 120) {
+                                midright.setBackgroundColor(Color.RED);}
+                            else if ( sensorData >= 120) {
+                                midright.setBackgroundColor(Color.MAGENTA);
+                            }
+
+//                            sensorData = Integer.parseInt(parts[4]);
+                            sensorData = (parts[4].equals("")) ? 0 : Integer.parseInt(parts[4]);
+                            if (sensorData <= 40){
+                                botleft.setBackgroundColor(Color.BLUE);
+                            } else if (sensorData > 40 && sensorData <= 80) {
+                                botleft.setBackgroundColor(Color.GREEN);
+                            } else if (sensorData > 80 && sensorData < 120) {
+                                botleft.setBackgroundColor(Color.RED);}
+                            else if ( sensorData >= 120) {
+                                botleft.setBackgroundColor(Color.MAGENTA);
+                            }
+
+                             sensorData = (parts[5].equals("")) ? 0 : Integer.parseInt(parts[5]);
+                            if (sensorData <= 40){
+                                botright.setBackgroundColor(Color.BLUE);
+                            } else if (sensorData > 40 && sensorData <= 80) {
+                                botright.setBackgroundColor(Color.GREEN);
+                            } else if (sensorData > 80 && sensorData < 120) {
+                                botright.setBackgroundColor(Color.RED);}
+                            else if ( sensorData >= 120) {
+                                botright.setBackgroundColor(Color.MAGENTA);
+                            }
                         }
 
-                        //Log.d(TAG, "...String:"+ sb.toString() +  "Byte:" + msg.arg1 + "...");
+                        //Convert the colors
+                        // blue : 0-341, green: 342-682, red: 683-1023
+
+
                         break;
                 }
             }
-
         };
 
+        //Check if bluetooth is supported if it is turn it on
+        mbtAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothState();
+        getUserWeight();
+
+
+//        btnOn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                btnOn.setEnabled(false);
+//                btnOff.setEnabled(true);
+//                mConnectedThread.write("1");
+//            }
+//        });
+//
+//        btnOff.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                btnOff.setEnabled(false);
+//                btnOn.setEnabled(true);
+//                mConnectedThread.write("0");
+//            }
+//        });
 
     }
 
@@ -239,16 +377,20 @@ public class MainActivity extends AppCompatActivity {
 
     private class ConnectedThread extends Thread {
         private final InputStream mInputStream;
+        private final OutputStream mOutputstream;
 
         public ConnectedThread(BluetoothSocket socket) {
             InputStream tempIn = null;
+            OutputStream tempOut = null;
 
             //get the input and output streams
             try {
                 tempIn = socket.getInputStream();
+                tempOut = socket.getOutputStream();
             } catch (IOException e) { }
 
             mInputStream = tempIn;
+            mOutputstream = tempOut;
         }
 
         public void run() {
@@ -267,6 +409,17 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+
+        public void write(String message) {
+            Log.d(TAG, "...Data to send: " + message + "...");
+            byte[] msgBuffer = message.getBytes();
+            try {
+                mOutputstream.write(msgBuffer);
+            } catch (IOException e) {
+                Log.d(TAG, "...Error data send: " + e.getMessage() + "...");
+            }
+        }
+
         //Call from main activity to shutdown connection
         public void cancel() {
             try {
@@ -297,7 +450,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        cancel();
         super.onDestroy();
     }
 }

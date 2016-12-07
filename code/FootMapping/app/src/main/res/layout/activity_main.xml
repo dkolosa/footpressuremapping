@@ -15,10 +15,12 @@
     android:background="@drawable/shoe_layout">
 
 
-
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="12dp">
 
         <TextView
                 android:layout_width="40dp"
@@ -32,7 +34,7 @@
             android:layout_centerHorizontal="true" />
 
         <TextView
-            android:layout_width="40dp "
+            android:layout_width="40dp"
             android:layout_height="60dp"
             android:background="#0033ff"
             android:id="@+id/botleft"
@@ -88,14 +90,6 @@
             android:layout_alignBottom="@+id/midright"
             android:layout_alignStart="@+id/botleft" />
 
-        <TextView
-            android:text="TextView"
-            android:layout_width="100dp"
-            android:layout_height="30dp"
-            android:background="#ffffff"
-            android:id="@+id/txtArduino"
-            android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/topleft" />
     </RelativeLayout>
 
 </RelativeLayout>
