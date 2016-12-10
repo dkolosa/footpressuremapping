@@ -27,8 +27,6 @@
                 android:layout_height="60dp"
                 android:background="#ff5e00"
                 android:id="@+id/topright"
-                android:text="tright"
-                android:layout_weight="1"
                 android:layout_marginTop="70dp"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true" />
@@ -38,8 +36,6 @@
             android:layout_height="60dp"
             android:background="#0033ff"
             android:id="@+id/botleft"
-            android:text="bleft"
-            android:layout_weight="1"
             android:layout_marginBottom="92dp"
             android:layout_alignParentBottom="true"
             android:layout_toStartOf="@+id/midright"
@@ -50,17 +46,13 @@
                 android:layout_height="60dp"
                 android:background="#ff00e5"
                 android:id="@+id/botright"
-                android:text="bright"
-                android:layout_weight="1"
-            android:layout_alignBaseline="@+id/botleft"
-            android:layout_alignBottom="@+id/botleft"
-            android:layout_alignStart="@+id/midright" />
+                android:layout_alignBaseline="@+id/botleft"
+                android:layout_alignBottom="@+id/botleft"
+                android:layout_alignStart="@+id/midright" />
 
         <TextView
             android:background="#FF0000"
             android:id="@+id/topleft"
-            android:text="tleft"
-            android:layout_weight="1"
             android:layout_width="40dp"
             android:layout_height="60dp"
             android:layout_alignBaseline="@+id/topright"
@@ -72,23 +64,28 @@
                 android:layout_height="60dp"
                 android:background="#5f00ff2f"
                 android:id="@+id/midright"
-                android:text="mright"
-                android:layout_weight="1"
-            android:layout_marginTop="90dp"
-            android:layout_below="@+id/topright"
-            android:layout_alignStart="@+id/topright" />
+                android:layout_marginTop="90dp"
+                android:layout_below="@+id/topright"
+                android:layout_alignStart="@+id/topright" />
 
         <TextView
                 android:layout_width="40dp"
                 android:layout_height="60dp"
                 android:background="#51ff00"
                 android:id="@+id/midleft"
-                android:text="mleft"
+                android:layout_alignBaseline="@+id/midright"
+                android:layout_alignBottom="@+id/midright"
+                android:layout_alignStart="@+id/botleft" />
 
-                android:layout_weight="1"
-            android:layout_alignBaseline="@+id/midright"
-            android:layout_alignBottom="@+id/midright"
-            android:layout_alignStart="@+id/botleft" />
+        <ToggleButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/toggleButton"
+            android:textOn="@string/toggle_on"
+            android:textOff="@string/toggle_off"
+            style="@android:style/Theme.Material"/>
 
     </RelativeLayout>
 
