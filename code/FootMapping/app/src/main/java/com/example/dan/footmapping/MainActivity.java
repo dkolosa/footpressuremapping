@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -15,24 +16,27 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
+import android.widget.ToggleButton;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private BluetoothAdapter mbtAdapter = null;
     private BluetoothSocket mbtSocket = null;
-    private InputStream outStream = null;
 
     private ConnectedThread mConnectedThread;
     private static final String TAG = "bluetooth";
@@ -40,10 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private StringBuilder sb = new StringBuilder();
     private List<String> mArrayAdapter = null;
 
-    private int sensorDAta = 0;
-
     Handler h;
-    TextView txtArduino;
 
     TextView topleft;
     TextView topright;
@@ -52,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
     TextView botleft;
     TextView botright;
 
+    ToggleButton readData;
+
+    Button btnOn, btnOff;
+
     final int RECIEVE_MESSAGE = 1;
 
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -59,16 +64,12 @@ public class MainActivity extends AppCompatActivity {
     private static String address = "20:16:08:16:14:78";
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtArduino = (TextView) findViewById(R.id.txtArduino);
-
         //Generate id of squares
-
         topleft = (TextView) findViewById(R.id.topleft);
         topright = (TextView) findViewById(R.id.topright);
         midleft = (TextView) findViewById(R.id.midleft);
@@ -76,38 +77,106 @@ public class MainActivity extends AppCompatActivity {
         botleft = (TextView) findViewById(R.id.botleft);
         botright = (TextView) findViewById(R.id.botright);
 
+        //Toggle button to turn on or off reading
+        readData = (ToggleButton) findViewById(R.id.toggleButton);
 
         //Check if bluetooth is supported if it is turn it on
         mbtAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothState();
         getUserWeight();
 
-
         h = new Handler() {
             public void handleMessage(android.os.Message msg) {
                 switch (msg.what) {
                     case RECIEVE_MESSAGE:                                                   // if receive massage
                         byte[] readBuf = (byte[]) msg.obj;
+
                         String strIncom = new String(readBuf, 0, msg.arg1);                 // create string from bytes array
+
                         sb.append(strIncom);                                                // append string
-                        int endOfLineIndex = sb.indexOf("\n");                            // determine the end-of-line
-                        txtArduino.setText(strIncom);
+                        int endOfLineIndex = sb.indexOf("~");                            // determine the end-of-line
+
                         if (endOfLineIndex > 0) {                                            // if end-of-line,
                             String sbprint = sb.substring(0, endOfLineIndex);               // extract string
                             sb.delete(0, sb.length());                                      // and clear
-                                        // update TextView
-                        }
+                            // update TextView
 
-                        //Log.d(TAG, "...String:"+ sb.toString() +  "Byte:" + msg.arg1 + "...");
+                            sbprint = sbprint.replaceFirst(Pattern.quote("#"), "");
+
+                            if (sbprint.startsWith("+")) {
+                                sbprint.replaceFirst(Pattern.quote("+"), "");
+                            }
+
+                            if (sbprint.contains("++")) {
+                                sbprint.replace(Pattern.quote("++"), "+0+");
+                            }
+                            if (sbprint.contains("+++")) {
+                                sbprint.replace(Pattern.quote("+++"), "+0+0+");
+                            }
+
+                            String[] parts = sbprint.split(Pattern.quote("+"));
+
+
+                            int sensorData = (parts[0].equals("")) ? 0 : Integer.parseInt(parts[0]);
+                            //Log.d(TAG, "String:" + sensorData);
+
+                            //Convert the colors
+                            // blue : 0-341, green: 342-682, red: 683-1023
+
+                            changeColor(topleft, sensorData);
+
+                            sensorData = (parts[1].equals("")) ? 0 : Integer.parseInt(parts[1]);
+                            changeColor(topright, sensorData);
+
+                            sensorData = (parts[2].equals("")) ? 0 : Integer.parseInt(parts[2]);
+                            changeColor(midleft, sensorData);
+
+                            sensorData = (parts[3].equals("")) ? 0 : Integer.parseInt(parts[3]);
+                            changeColor(midright, sensorData);
+
+                            sensorData = (parts[4].equals("")) ? 0 : Integer.parseInt(parts[4]);
+                            changeColor(botleft, sensorData);
+
+                            sensorData = (parts[5].equals("")) ? 0 : Integer.parseInt(parts[5]);
+                            changeColor(botright, sensorData);
+                        }
                         break;
                 }
             }
-
         };
 
-
+        readData.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked){
+                    //on
+                    mConnectedThread.write("1");
+                }else {
+                    //off
+                    mConnectedThread.write("0");
+                }
+            }
+        });
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_settings:
+                getUserWeight();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
 
     private void bluetoothState(){
         if (mbtAdapter == null) {
@@ -153,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getUserWeight() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Foot Mapper");
+        builder.setTitle("Enter Your Weight:");
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
@@ -173,9 +242,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         builder.show();
     }
-
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         if(Build.VERSION.SDK_INT >= 10){
@@ -189,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return  device.createRfcommSocketToServiceRecord(MY_UUID);
     }
-
 
     @Override
     public void onResume(){
@@ -222,82 +290,25 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        //Create a data stream
-        try{
-            outStream = mbtSocket.getInputStream();
-            Toast.makeText(getApplicationContext(), "Getting input data", Toast.LENGTH_LONG).show();
-
-        } catch (IOException e) {
-            Toast.makeText(getApplicationContext(), "Input stream connection failure", Toast.LENGTH_LONG).show();
-        }
-
         mConnectedThread = new ConnectedThread(mbtSocket);
         mConnectedThread.start();
 
     }
 
 
-    private class ConnectedThread extends Thread {
-        private final InputStream mInputStream;
 
-        public ConnectedThread(BluetoothSocket socket) {
-            InputStream tempIn = null;
-
-            //get the input and output streams
-            try {
-                tempIn = socket.getInputStream();
-            } catch (IOException e) { }
-
-            mInputStream = tempIn;
-        }
-
-        public void run() {
-            byte[] buffer = new byte[256];
-            int bytes; // bytes returned
-
-            //Listen to input until failure
-            while (true) {
-                try {
-                    //Read from input
-                    bytes = mInputStream.read(buffer);
-                    h.obtainMessage(RECIEVE_MESSAGE, bytes, -1, buffer).sendToTarget();
-                } catch (IOException e){
-                    break;
-                }
-            }
-
-        }
-        //Call from main activity to shutdown connection
-        public void cancel() {
-            try {
-                mbtSocket.close();
-            } catch (IOException e) {}
-        }
-
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_settings:
-                getUserWeight();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
+    private void changeColor(TextView sensor, int sensorData) {
+        switch (sensorData){
+            case sensorData <= 40
+                sensor.setBackgroundColor(Color.BLUE);
+                break;
+            case sensorData > 40 && sensorData <= 80
+                sensor.setBackgroundColor(Color.CYAN);
+                break;
+            case sensorData > 80 && sensorData < 120
+                sensor.setBackgroundColor(Color.GREEN);
+                break;
+            case sensorData >= 120
+                sensor.setBackgroundColor(Color.RED);
         }
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
-        return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        cancel();
-        super.onDestroy();
-    }
-}
