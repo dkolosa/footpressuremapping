@@ -6,11 +6,3 @@ staging: Features that are mostly working but not yet ready to moved to due to c
 Arduino: any and all feature(s) that are being worked on in the MCU or Arduino side of the project
 Android: and and all feature(s) that are being worked on in the app side of the project
 
-NOTE: might consider moving Report to seperate repository
-      when/if project get more complex
-
-
-For a git tutorial:
-https://www.atlassian.com/git/
-
-
