@@ -1,5 +1,13 @@
+const int ANAPINS[] = {0,1,2};
+int incoming;
+int npins = 3;
+int value;
+
 void setup()
 {
+  for (int pin = 0; pin < npins; pin++){
+    pinMode(ANAPINS[pin], OUTPUT);
+  }
   //Poll the prot
   Serial.begin(9600); //sertial comm at 9600bps
 }
@@ -8,15 +16,16 @@ void loop()
 {
   char val;
 
-  iif( Serial.available() )       // if data is available to read
+  iif( Serial.available() > 0)       // if data is available to read
   {
-    val = Serial.read();         // read it and store it
+    for (int analogpin = 0; analogpin < npins; analogpin++)
+    {
+      analogRead(analogpin);
+      delay(100);
+      value = analogRead(analogpin);
+      Serial.print(value);
+    }
+    Serial.print("\n");
+    delay(100);
   }
-  if( val == 'H' )               // if 'H' was received
-  {
-    digitalWrite(ledpin, HIGH);  // turn ON the LED
-  } else {
-    digitalWrite(ledpin, LOW);   // otherwise turn it OFF
-  }
-  delay(100);
 }

@@ -1,4 +1,4 @@
-This project uses piezoelectric sensors to map the pressure distribution on a foot during physical activity.
+This project uses piezoelectric sensors to map the pressure distribution on a foot. This project is made up of two parts: The signal processing using an Arduino microcontroller, and companion android app.
 
 Project Structure:
 master: holds all folders that are part of the stable(working) branch of the project
