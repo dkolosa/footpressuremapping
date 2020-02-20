@@ -19,5 +19,5 @@ The app has been tested on Android 5.0.
 
 An apk is avaliable in releases.
 
-## Remort
+## Report
 The included pdf details the project, setup, preliminary results, meterials used, and results.
